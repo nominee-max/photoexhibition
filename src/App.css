@@ -1,0 +1,24 @@
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: linear-gradient(45deg, #1a1a1a 0%, #2a1a3a 25%, #1a2a3a 50%, #2a1a3a 75%, #1a1a1a 100%);
+  background-size: 400% 400%;
+  animation: flowingGradient 15s ease infinite;
+}
+
+@keyframes flowingGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

@@ -1,0 +1,105 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import image from '../../assets/placeholder.jpeg';
+import './Carsoul.css';
+
+const PHOTOS = Array(12).fill(image);
+
+const Carsoul = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Memoize navigation to reuse in useEffect and buttons
+  const nextSlide = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % PHOTOS.length);
+  }, []);
+
+  const prevSlide = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + PHOTOS.length) % PHOTOS.length);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'ArrowRight') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [nextSlide, prevSlide]);
+
+  const getPhotoStyle = (index) => {
+    const total = PHOTOS.length;
+    // Calculate the shortest path for rotation
+    let offset = index - currentIndex;
+    
+    if (offset > total / 2) offset -= total;
+    if (offset <= -total / 2) offset += total;
+
+    const absOffset = Math.abs(offset);
+    const isActive = offset === 0;
+    const isVisible = absOffset <= 1; // Only show current, next, and previous
+
+    // Use viewport-based horizontal distance to create a slide motion
+    // focused image occupies most of the viewport; neighbors sit at edges
+    const slideVW = 70; // percent of viewport width per step
+
+    return {
+      transform: `
+        translateX(${offset * slideVW}vw) 
+        rotateY(${offset * -35}deg)
+        translateZ(${isActive ? 0 : -300}px)
+        scale(${isActive ? 1 : 0.8})
+      `,
+      opacity: isVisible ? (isActive ? 1 : 0.6) : 0,
+      zIndex: 10 - absOffset,
+      pointerEvents: isVisible ? (isActive ? 'auto' : 'none') : 'none',
+      willChange: 'transform, opacity',
+    };
+  };
+
+  return (
+    <div className="carousel-container">
+      <div className="carousel-header">
+        <h1>Gallery</h1>
+      </div>
+
+      <div className="carousel-viewport">
+        {PHOTOS.map((photo, index) => (
+          <div
+            key={index}
+            className="carousel-photo"
+            style={getPhotoStyle(index)}
+          >
+            <img src={photo} alt={`Slide ${index + 1}`} />
+          </div>
+        ))}
+      </div>
+
+      <div className="carousel-controls">
+        <button className="carousel-btn" onClick={prevSlide} aria-label="Previous">
+          ◀
+        </button>
+
+        <div className="carousel-dots">
+          {PHOTOS.map((_, index) => (
+            <button
+              key={index}
+              className={`dot ${index === currentIndex ? 'active' : ''}`}
+              onClick={() => setCurrentIndex(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        <button className="carousel-btn" onClick={nextSlide} aria-label="Next">
+          ▶
+        </button>
+      </div>
+
+      <div className="carousel-counter">
+        {currentIndex + 1} of {PHOTOS.length}
+      </div>
+    </div>
+  );
+};
+
+export default Carsoul;
